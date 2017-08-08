@@ -40,7 +40,6 @@ about:
   license_family: BSD
   license_file: LICENSE.md
   summary: 'Helper functions, etc. for Flatland'
-  # doc_url:  http://platformio-helpers.readthedocs.org
 
 extra:
   recipe-maintainers:
