@@ -1,6 +1,9 @@
+import json
+
 FIELD_TYPES = {}
-FIELD_TYPES["number"] = ["Decimal", "Float", "Integer", "Long", "Number"]
-FIELD_TYPES["string"] = ["String"]
+FIELD_TYPES["number"]  = ["Decimal", "Float", "Integer", "Long", "Number"]
+FIELD_TYPES["string"]  = ["String"]
+FIELD_TYPES["boolean"] = ["Boolean"]
 
 NUMBER_VALIDATION = {}
 NUMBER_VALIDATION["minimum"] = ["ValueAtLeast", "ValueBetween", "ValueLessThan"]
@@ -10,22 +13,32 @@ STRING_VALIDATION = {}
 STRING_VALIDATION["minLength"] = ["LongerThan",  "LengthBetween"]
 STRING_VALIDATION["maxLength"] = ["ShorterThan", "LengthBetween"]
 
-def flatlandToJSON(form):
+def flatlandToDict(form):
     '''
     Convert Flatland Form Object to JSON schema
     '''
     step_fields = form().field_schema_mapping
-    json_schema = {}
+    schema = {}
 
     for k, f in step_fields.iteritems():
         obj = {}
         field_type = f.__name__
-
+        if field_type in FIELD_TYPES["string"]:
+            obj["type"] = "string"
+            default = ""
+        if field_type in FIELD_TYPES["boolean"]:
+            obj["type"] = "boolean"
+            default = False
         if field_type in FIELD_TYPES["number"]:
             obj["type"] = "number"
+            default = 0
 
-        if field_type is "Integer":
-            obj["multipleOf"] = 1.0
+        if field_type is "Integer": obj["multipleOf"] = 1.0
+
+        if hasattr(f, 'default'):
+            obj["default"] = f.default
+        else:
+            obj["default"] = default
 
         for v in f.validators:
             validator = type(v).__name__
@@ -52,6 +65,6 @@ def flatlandToJSON(form):
                 field_type in FIELD_TYPES["string"]):
                 obj["maxLength"] = v.maxLength
 
-        json_schema[k] = obj
+        schema[k] = obj
 
-    return json.dumps(json_schema)
+    return schema
